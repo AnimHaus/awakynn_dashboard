@@ -8,17 +8,24 @@ import Link from 'next/link';
 import { LogOut, Users, ChevronDown } from 'lucide-react';
 
 const BRANDS = [
-  { label: 'Awakynn',      slug: 'awakynn',  active: false },
+  { label: 'Awakynn',      slug: 'awakynn',  active: true  },
   { label: 'Grabfabs',     slug: 'grabfabs', active: true  },
   { label: 'FÉSTIQ',       slug: 'festiq',   active: false },
   { label: 'ÉSTRÁ Ritual', slug: 'estra',    active: false },
 ];
 
-const NAV = [
-  { segment: 'overview',  label: 'Overview'  },
-  { segment: 'orders',    label: 'Orders'    },
-  { segment: 'products',  label: 'Products'  },
-];
+const NAV_BY_BRAND: Record<string, { segment: string; label: string }[]> = {
+  grabfabs: [
+    { segment: 'overview', label: 'Overview' },
+    { segment: 'orders',   label: 'Orders'   },
+    { segment: 'products', label: 'Products' },
+  ],
+  awakynn: [
+    { segment: 'classes',  label: 'Classes'  },
+  ],
+};
+
+const DEFAULT_NAV = NAV_BY_BRAND.grabfabs;
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
@@ -27,6 +34,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   // Derive active brand slug from pathname e.g. /grabfabs/overview → grabfabs
   const activeBrand = BRANDS.find((b) => pathname.startsWith(`/${b.slug}`))?.slug ?? 'grabfabs';
+  const NAV = NAV_BY_BRAND[activeBrand] ?? DEFAULT_NAV;
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -71,20 +79,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Brand tabs — absolutely centered so profile dropdown doesn't shift them */}
           <nav className="absolute left-1/2 -translate-x-1/2 flex items-center gap-1">
-            {BRANDS.map((brand) => (
-              <button
-                key={brand.label}
-                disabled={!brand.active}
-                className={[
-                  'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
-                  brand.active
-                    ? 'bg-[#EEF3FF] text-[#2A61F9] cursor-default'
-                    : 'text-gray-400 cursor-not-allowed select-none',
-                ].join(' ')}
-              >
-                {brand.label}
-              </button>
-            ))}
+            {BRANDS.map((brand) => {
+              const isActive = activeBrand === brand.slug;
+              return (
+                <button
+                  key={brand.label}
+                  disabled={!brand.active}
+                  onClick={() => {
+                    if (!brand.active) return;
+                    const defaultSeg = (NAV_BY_BRAND[brand.slug] ?? DEFAULT_NAV)[0].segment;
+                    router.push(`/${brand.slug}/${defaultSeg}`);
+                  }}
+                  className={[
+                    'relative px-4 py-1.5 text-sm font-medium transition-colors duration-150',
+                    brand.active
+                      ? isActive ? 'text-[#2A61F9] cursor-pointer' : 'text-gray-500 hover:text-gray-700 cursor-pointer'
+                      : 'text-gray-300 cursor-not-allowed select-none',
+                  ].join(' ')}
+                >
+                  {brand.label}
+                  {isActive && (
+                    <span
+                      className="absolute left-0 right-0 pointer-events-none"
+                      style={{
+                        bottom: -4,
+                        height: 8,
+                        background: 'linear-gradient(to bottom, rgba(42,97,249,0.15) 0%, transparent 100%)',
+                      }}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </nav>
 
           {/* Profile dropdown */}

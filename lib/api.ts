@@ -195,3 +195,85 @@ export const users = {
   updateMe: (data: { full_name?: string; phone?: string }) =>
     apiFetch<User>('/auth/me', { method: 'PATCH', body: JSON.stringify(data) }),
 };
+
+// ── Uploads ───────────────────────────────────────────────────────────────────
+
+export const uploads = {
+  /**
+   * Upload an image file to the specified brand's R2 bucket.
+   * Returns the public CDN URL of the uploaded image.
+   */
+  uploadImage: async (brand: string, file: File, folder = 'products'): Promise<string> => {
+    const token = getToken();
+    const form = new FormData();
+    form.append('file', file);
+
+    const res = await fetch(
+      `${API_BASE}/uploads/${brand}/image?folder=${encodeURIComponent(folder)}`,
+      {
+        method: 'POST',
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: form,
+      },
+    );
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(err.detail ?? `HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+    return data.url as string;
+  },
+};
+
+// ── Class Sessions (Awakynn) ──────────────────────────────────────────────────
+
+export type ClassSession = {
+  id: string;
+  slot_id: string;
+  day_of_week: number;
+  occurrence_date: string;
+  end_date: string;
+  title: string;
+  meet_link: string;
+  generated_at: string | null;
+  created_at: string;
+};
+
+export type GenerateSessionPayload = {
+  slot_id: string;
+  day_of_week: number;
+  occurrence_date: string; // ISO
+  end_date: string;        // ISO
+  title: string;
+};
+
+export const classSessions = {
+  list: (upcomingOnly = true) =>
+    apiFetch<ClassSession[]>(`/classes/sessions?upcoming_only=${upcomingOnly}`),
+
+  generate: (payload: GenerateSessionPayload) =>
+    apiFetch<ClassSession>('/classes/sessions/generate', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  delete: (id: string) =>
+    apiFetch<void>(`/classes/sessions/${id}`, { method: 'DELETE' }),
+};
+
+// ── Site settings ─────────────────────────────────────────────────────────────
+
+export type Season = 'summer' | 'monsoon' | 'autumn' | 'winter';
+
+export const siteSettings = {
+  getSeason: () =>
+    apiFetch<{ season: Season }>('/settings/season', {}, false),
+
+  setSeason: (season: Season) =>
+    apiFetch<{ season: Season }>('/settings/season', {
+      method: 'PATCH',
+      body: JSON.stringify({ season }),
+    }),
+};
