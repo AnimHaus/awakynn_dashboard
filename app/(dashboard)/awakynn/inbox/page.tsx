@@ -7,11 +7,16 @@ import {
 } from '@/lib/api';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@/components/ui/table';
 import {
   RefreshCw, Trash2, Mail, CheckCircle2, MessageSquare,
   Star, StarOff, Clock, Eye,
@@ -22,16 +27,16 @@ import {
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
 
-const STATUS_BADGE: Record<ContactMessage['status'], string> = {
-  new:     'bg-blue-50 text-blue-700 border-blue-200',
-  read:    'bg-gray-100 text-gray-600 border-gray-200',
-  replied: 'bg-green-50 text-green-700 border-green-200',
-};
+function msgStatusBadge(status: ContactMessage['status']) {
+  if (status === 'new')     return <Badge>new</Badge>;
+  if (status === 'replied') return <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50">replied</Badge>;
+  return <Badge variant="secondary">read</Badge>;
+}
 
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function InboxPage() {
-  const [tab, setTab]                   = useState<'messages' | 'testimonials'>('messages');
+  const [tab, setTab] = useState<'messages' | 'testimonials'>('messages');
   const [messages, setMessages]         = useState<ContactMessage[]>([]);
   const [testimonials, setTestimonials] = useState<TestimonialSubmission[]>([]);
   const [loading, setLoading]           = useState(true);
@@ -102,7 +107,7 @@ export default function InboxPage() {
     finally { setActioning(null); }
   }
 
-  const newCount = messages.filter((m) => m.status === 'new').length;
+  const newCount     = messages.filter((m) => m.status === 'new').length;
   const pendingCount = testimonials.filter((t) => !t.approved).length;
 
   return (
@@ -121,121 +126,187 @@ export default function InboxPage() {
       </div>
 
       {error && (
-        <div className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 flex items-center justify-between">
+        <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-4 py-2.5 flex items-center justify-between">
           <span>{error}</span>
           <button className="ml-2 underline shrink-0" onClick={() => setError(null)}>Dismiss</button>
         </div>
       )}
 
-      {/* Tab bar */}
-      <div className="flex items-center gap-0 border w-fit" style={{ borderColor: '#2F4F46' }}>
-        <button
-          onClick={() => setTab('messages')}
-          className="flex items-center gap-2 px-5 py-2 text-[0.68rem] font-medium tracking-[0.18em] uppercase transition-all duration-200"
-          style={{
-            backgroundColor: tab === 'messages' ? '#2F4F46' : 'transparent',
-            color: tab === 'messages' ? '#faf8f5' : '#2F4F46',
-          }}
-        >
-          <Mail className="w-3.5 h-3.5" />
-          Messages
-          {newCount > 0 && (
-            <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-blue-500 text-white text-[10px]">
-              {newCount}
-            </span>
-          )}
-        </button>
-        <button
-          onClick={() => setTab('testimonials')}
-          className="flex items-center gap-2 px-5 py-2 text-[0.68rem] font-medium tracking-[0.18em] uppercase transition-all duration-200"
-          style={{
-            backgroundColor: tab === 'testimonials' ? '#2F4F46' : 'transparent',
-            color: tab === 'testimonials' ? '#faf8f5' : '#2F4F46',
-          }}
-        >
-          <Star className="w-3.5 h-3.5" />
-          Testimonials
-          {pendingCount > 0 && (
-            <span className="ml-1 flex h-4 w-4 items-center justify-center rounded-full bg-amber-500 text-white text-[10px]">
-              {pendingCount}
-            </span>
-          )}
-        </button>
-      </div>
+      <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="space-y-8">
+        <TabsList>
+          <TabsTrigger value="messages" className="flex items-center gap-2 data-active:bg-primary data-active:text-primary-foreground data-active:hover:text-primary-foreground p-4">
+            <Mail className="w-3.5 h-3.5" />
+            Messages
+            {newCount > 0 && <Badge className="ml-1 h-5 min-w-5 px-1.5 text-[10px]">{newCount}</Badge>}
+          </TabsTrigger>
+          <TabsTrigger value="testimonials" className="flex items-center gap-2 data-active:bg-primary data-active:text-primary-foreground data-active:hover:text-primary-foreground p-4">
+            <Star className="w-3.5 h-3.5" />
+            Testimonials
+            {pendingCount > 0 && (
+              <Badge variant="secondary" className="ml-1 h-5 min-w-5 px-1.5 text-[10px] bg-amber-100 text-amber-700">
+                {pendingCount}
+              </Badge>
+            )}
+          </TabsTrigger>
+        </TabsList>
 
-      {/* ── Messages tab ── */}
-      {tab === 'messages' && (
-        <div className="space-y-3">
-          {loading ? (
-            [...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 rounded-lg" />)
-          ) : messages.length === 0 ? (
-            <div className="rounded-xl border border-dashed px-6 py-10 text-center">
-              <p className="text-sm text-muted-foreground">No messages yet.</p>
-            </div>
-          ) : (
-            messages.map((m) => (
-              <div
-                key={m.id}
-                onClick={() => { setSelectedMsg(m); if (m.status === 'new') markStatus(m.id, 'read'); }}
-                className="flex items-start justify-between gap-4 border rounded-lg px-5 py-4 cursor-pointer hover:bg-muted/30 transition-colors"
-                style={{ borderLeft: m.status === 'new' ? '3px solid #2A61F9' : undefined }}
-              >
-                <div className="flex flex-col gap-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{m.name}</span>
-                    <span className="text-xs text-muted-foreground">{m.email}</span>
-                    {m.interest && (
-                      <Badge variant="outline" className="text-[10px]">{m.interest}</Badge>
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate max-w-xl">{m.message}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge className={`text-[10px] ${STATUS_BADGE[m.status]}`}>{m.status}</Badge>
-                  <span className="text-[10px] text-muted-foreground">{fmtDate(m.created_at)}</span>
-                </div>
+        {/* ── Messages tab ── */}
+        <TabsContent value="messages">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Messages</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="p-6 space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
               </div>
-            ))
-          )}
-        </div>
-      )}
+            ) : messages.length === 0 ? (
+              <div className="px-6 py-12 text-center">
+                <p className="text-sm text-muted-foreground">No messages yet.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>From</TableHead>
+                    <TableHead>Message</TableHead>
+                    <TableHead>Interest</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {messages.map((m) => (
+                    <TableRow
+                      key={m.id}
+                      className="cursor-pointer hover:bg-muted/40"
+                      onClick={() => { setSelectedMsg(m); if (m.status === 'new') markStatus(m.id, 'read'); }}
+                    >
+                      <TableCell>
+                        <p className="font-medium text-sm">{m.name}</p>
+                        <p className="text-xs text-muted-foreground">{m.email}</p>
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        <p className="text-xs text-muted-foreground truncate">{m.message}</p>
+                      </TableCell>
+                      <TableCell>
+                        {m.interest && <Badge variant="outline" className="text-[10px]">{m.interest}</Badge>}
+                      </TableCell>
+                      <TableCell>{msgStatusBadge(m.status)}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{fmtDate(m.created_at)}</TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
+                          disabled={actioning === m.id}
+                          onClick={() => deleteMessage(m.id)}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+        </TabsContent>
 
-      {/* ── Testimonials tab ── */}
-      {tab === 'testimonials' && (
-        <div className="space-y-3">
-          {loading ? (
-            [...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 rounded-lg" />)
-          ) : testimonials.length === 0 ? (
-            <div className="rounded-xl border border-dashed px-6 py-10 text-center">
-              <p className="text-sm text-muted-foreground">No testimonials submitted yet.</p>
-            </div>
-          ) : (
-            testimonials.map((t) => (
-              <div
-                key={t.id}
-                onClick={() => setSelectedTest(t)}
-                className="flex items-start justify-between gap-4 border rounded-lg px-5 py-4 cursor-pointer hover:bg-muted/30 transition-colors"
-                style={{ borderLeft: t.approved ? '3px solid #16a34a' : '3px solid #d97706' }}
-              >
-                <div className="flex flex-col gap-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">{t.name}</span>
-                    {t.age && <span className="text-xs text-muted-foreground">{t.age} yrs</span>}
-                    {t.note && <Badge variant="outline" className="text-[10px]">{t.note}</Badge>}
-                  </div>
-                  <p className="text-xs text-muted-foreground truncate max-w-xl">{t.message}</p>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <Badge className={`text-[10px] ${t.approved ? 'bg-green-50 text-green-700 border-green-200' : 'bg-amber-50 text-amber-700 border-amber-200'}`}>
-                    {t.approved ? 'Approved' : 'Pending'}
-                  </Badge>
-                  <span className="text-[10px] text-muted-foreground">{fmtDate(t.created_at)}</span>
-                </div>
+        {/* ── Testimonials tab ── */}
+        <TabsContent value="testimonials">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Testimonials</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="p-6 space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
               </div>
-            ))
-          )}
-        </div>
-      )}
+            ) : testimonials.length === 0 ? (
+              <div className="px-6 py-12 text-center">
+                <p className="text-sm text-muted-foreground">No testimonials submitted yet.</p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Testimonial</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {testimonials.map((t) => (
+                    <TableRow
+                      key={t.id}
+                      className="cursor-pointer hover:bg-muted/40"
+                      onClick={() => setSelectedTest(t)}
+                    >
+                      <TableCell>
+                        <p className="font-medium text-sm">{t.name}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          {t.age && <span className="text-xs text-muted-foreground">{t.age} yrs</span>}
+                          {t.note && <Badge variant="outline" className="text-[10px]">{t.note}</Badge>}
+                        </div>
+                      </TableCell>
+                      <TableCell className="max-w-xs">
+                        <p className="text-xs text-muted-foreground truncate">{t.message}</p>
+                      </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
+                        <button
+                          disabled={actioning === t.id}
+                          onClick={() => toggleApprove(t)}
+                          className="disabled:opacity-50"
+                          title={t.approved ? 'Click to unapprove' : 'Click to approve'}
+                        >
+                          {t.approved
+                            ? <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 cursor-pointer hover:bg-red-50 hover:text-red-700 hover:border-red-300 transition-colors">Approved</Badge>
+                            : <Badge variant="secondary" className="bg-amber-100 text-amber-700 cursor-pointer hover:bg-green-50 hover:text-green-700 transition-colors">Pending</Badge>
+                          }
+                        </button>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground whitespace-nowrap">{fmtDate(t.created_at)}</TableCell>
+                      <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs px-2"
+                            disabled={actioning === t.id}
+                            onClick={() => toggleApprove(t)}
+                          >
+                            {t.approved
+                              ? <><StarOff className="w-3.5 h-3.5 mr-1" />Unapprove</>
+                              : <><CheckCircle2 className="w-3.5 h-3.5 mr-1" />Approve</>
+                            }
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10 h-7 w-7 p-0"
+                            disabled={actioning === t.id}
+                            onClick={() => deleteTestimonial(t.id)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+        </TabsContent>
+      </Tabs>
 
       {/* ── Message detail dialog ── */}
       <Dialog open={!!selectedMsg} onOpenChange={(v) => { if (!v) setSelectedMsg(null); }}>
@@ -273,14 +344,14 @@ export default function InboxPage() {
               ))}
               <a
                 href={`mailto:${selectedMsg.email}`}
-                className="ml-auto text-xs text-blue-600 underline"
+                className="ml-auto text-xs text-primary underline underline-offset-2"
               >
                 Reply via email
               </a>
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs"
                 disabled={actioning === selectedMsg.id}
                 onClick={() => deleteMessage(selectedMsg.id)}
               >
@@ -306,14 +377,20 @@ export default function InboxPage() {
                 {selectedTest.note && <span className="ml-2 text-xs font-normal text-amber-600">{selectedTest.note}</span>}
               </DialogTitle>
             </DialogHeader>
-            <p className="text-xs text-muted-foreground">{fmtDate(selectedTest.created_at)}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-xs text-muted-foreground">{fmtDate(selectedTest.created_at)}</p>
+              {selectedTest.approved
+                ? <Badge variant="outline" className="text-green-700 border-green-300 bg-green-50 text-[10px]">Approved</Badge>
+                : <Badge variant="secondary" className="bg-amber-100 text-amber-700 text-[10px]">Pending review</Badge>
+              }
+            </div>
             <Separator />
             <p className="text-sm leading-[1.85] whitespace-pre-wrap">{selectedTest.message}</p>
             <Separator />
             <div className="flex items-center gap-2">
               <Button
                 size="sm"
-                variant={selectedTest.approved ? 'default' : 'outline'}
+                variant={selectedTest.approved ? 'outline' : 'default'}
                 className="text-xs"
                 disabled={actioning === selectedTest.id}
                 onClick={() => toggleApprove(selectedTest)}
@@ -326,7 +403,7 @@ export default function InboxPage() {
               <Button
                 size="sm"
                 variant="ghost"
-                className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs ml-auto"
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs ml-auto"
                 disabled={actioning === selectedTest.id}
                 onClick={() => deleteTestimonial(selectedTest.id)}
               >
