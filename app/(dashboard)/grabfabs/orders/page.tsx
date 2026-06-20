@@ -55,7 +55,7 @@ export default function OrdersPage() {
           <h1 className="text-2xl font-bold">Orders</h1>
           <p className="text-muted-foreground text-sm">{orderList.length} orders</p>
         </div>
-        <Select value={filter} onValueChange={setFilter}>
+        <Select value={filter} onValueChange={(v) => { if (v) setFilter(v); }}>
           <SelectTrigger className="w-36">
             <SelectValue placeholder="Filter status" />
           </SelectTrigger>
@@ -117,7 +117,7 @@ export default function OrdersPage() {
                       <TableCell>
                         <Select
                           value={o.status}
-                          onValueChange={(val) => changeStatus(o.id, val)}
+                          onValueChange={(val) => { if (val) changeStatus(o.id, val); }}
                           disabled={updating === o.id}
                         >
                           <SelectTrigger className="h-7 text-xs w-28">
