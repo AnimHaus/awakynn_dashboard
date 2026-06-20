@@ -277,3 +277,54 @@ export const siteSettings = {
       body: JSON.stringify({ season }),
     }),
 };
+
+// ── Contact messages ──────────────────────────────────────────────────────────
+
+export type ContactMessage = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  interest: string;
+  message: string;
+  status: 'new' | 'read' | 'replied';
+  created_at: string;
+};
+
+export const contactMessages = {
+  list: () => apiFetch<ContactMessage[]>('/contact/messages'),
+
+  updateStatus: (id: string, status: ContactMessage['status']) =>
+    apiFetch<ContactMessage>(`/contact/messages/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
+
+  delete: (id: string) =>
+    apiFetch<void>(`/contact/messages/${id}`, { method: 'DELETE' }),
+};
+
+// ── Testimonial submissions ───────────────────────────────────────────────────
+
+export type TestimonialSubmission = {
+  id: string;
+  name: string;
+  age: number | null;
+  note: string;
+  message: string;
+  approved: boolean;
+  created_at: string;
+};
+
+export const testimonialSubmissions = {
+  list: () => apiFetch<TestimonialSubmission[]>('/contact/testimonials'),
+
+  setApproved: (id: string, approved: boolean) =>
+    apiFetch<TestimonialSubmission>(`/contact/testimonials/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ approved }),
+    }),
+
+  delete: (id: string) =>
+    apiFetch<void>(`/contact/testimonials/${id}`, { method: 'DELETE' }),
+};
