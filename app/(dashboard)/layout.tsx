@@ -22,6 +22,7 @@ const NAV_BY_BRAND: Record<string, { segment: string; label: string }[]> = {
   ],
   awakynn: [
     { segment: 'classes',  label: 'Classes'  },
+    { segment: 'events',   label: 'Events'   },
     { segment: 'inbox',    label: 'Inbox'    },
   ],
 };

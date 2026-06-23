@@ -328,3 +328,41 @@ export const testimonialSubmissions = {
   delete: (id: string) =>
     apiFetch<void>(`/contact/testimonials/${id}`, { method: 'DELETE' }),
 };
+
+// ── Events (Awakynn) ─────────────────────────────────────────────────────────
+
+export type AwakyynnEvent = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  logo_url: string;
+  youtube_video_id: string;
+  start_date: string;
+  end_date: string;
+};
+
+export type CreateEventPayload = {
+  slug: string;
+  title: string;
+  description?: string;
+  logo_url?: string;
+  youtube_video_id?: string;
+  start_date: string;
+  end_date: string;
+};
+
+export type UpdateEventPayload = Partial<Omit<CreateEventPayload, 'slug'>>;
+
+export const awakyynnEvents = {
+  list: () => apiFetch<AwakyynnEvent[]>('/events/'),
+
+  create: (payload: CreateEventPayload) =>
+    apiFetch<AwakyynnEvent>('/events/', { method: 'POST', body: JSON.stringify(payload) }),
+
+  update: (slug: string, payload: UpdateEventPayload) =>
+    apiFetch<AwakyynnEvent>(`/events/${slug}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+
+  delete: (slug: string) =>
+    apiFetch<void>(`/events/${slug}`, { method: 'DELETE' }),
+};
