@@ -366,3 +366,48 @@ export const awakyynnEvents = {
   delete: (slug: string) =>
     apiFetch<void>(`/events/${slug}`, { method: 'DELETE' }),
 };
+
+// ── Gallery (Awakynn) ─────────────────────────────────────────────────────────
+
+export type GalleryItem = {
+  id: string;
+  title: string;
+  caption: string;
+  image_url: string;
+  r2_key: string;
+  sort_order: number;
+  is_visible: boolean;
+  created_at: string;
+};
+
+export const gallery = {
+  list: (visibleOnly = false) =>
+    apiFetch<GalleryItem[]>(`/gallery/?visible_only=${visibleOnly}`),
+
+  upload: async (file: File, title: string, caption: string, sortOrder: number): Promise<GalleryItem> => {
+    const token = getToken();
+    const form = new FormData();
+    form.append('file', file);
+    form.append('title', title);
+    form.append('caption', caption);
+    form.append('sort_order', String(sortOrder));
+
+    const res = await fetch(`${API_BASE}/gallery/upload`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: 'Upload failed' }));
+      throw new Error(err.detail ?? `HTTP ${res.status}`);
+    }
+    return res.json();
+  },
+
+  update: (id: string, data: { title?: string; caption?: string; sort_order?: number; is_visible?: boolean }) =>
+    apiFetch<GalleryItem>(`/gallery/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+  delete: (id: string) =>
+    apiFetch<void>(`/gallery/${id}`, { method: 'DELETE' }),
+};
