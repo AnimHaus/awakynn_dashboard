@@ -411,3 +411,34 @@ export const gallery = {
   delete: (id: string) =>
     apiFetch<void>(`/gallery/${id}`, { method: 'DELETE' }),
 };
+
+// ── Service Bookings (Awakynn) ────────────────────────────────────────────────
+
+export type ServiceBooking = {
+  id: string;
+  service_slug: string;
+  service_name: string;
+  amount: number;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  payment_status: 'unpaid' | 'paid' | 'refunded';
+  razorpay_order_id: string | null;
+  notes: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export const serviceBookings = {
+  list: (statusFilter?: string) => {
+    const params = statusFilter ? `?status_filter=${statusFilter}` : '';
+    return apiFetch<ServiceBooking[]>(`/services/bookings/${params}`);
+  },
+
+  updateStatus: (id: string, status: string) =>
+    apiFetch<ServiceBooking>(`/services/bookings/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    }),
+};

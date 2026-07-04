@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { RefreshCw, Trash2, Plus, ExternalLink, Image as ImageIcon, Youtube } from 'lucide-react';
+import { RefreshCw, Trash2, Plus, ExternalLink, Image as ImageIcon, Play } from 'lucide-react';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -225,7 +225,7 @@ function EventFormDialog({
           {/* YouTube video ID */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
-              <Youtube className="w-3.5 h-3.5" /> YouTube Video ID
+              <Play className="w-3.5 h-3.5" /> YouTube Video ID
             </label>
             <Input
               placeholder="e.g. dQw4w9WgXcQ"
@@ -348,7 +348,7 @@ function EventCard({
 
         {event.youtube_video_id && (
           <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <Youtube className="w-3 h-3" />
+            <Play className="w-3 h-3" />
             <code>{event.youtube_video_id}</code>
           </div>
         )}
