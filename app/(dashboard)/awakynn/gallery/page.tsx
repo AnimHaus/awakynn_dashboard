@@ -257,7 +257,7 @@ function GalleryCard({
   const busy = actionId === item.id;
 
   return (
-    <Card className={`overflow-hidden transition-opacity ${!item.is_visible ? 'opacity-50' : ''}`}>
+    <Card className={`overflow-hidden py-0 transition-opacity ${!item.is_visible ? 'opacity-50' : ''}`}>
       <div className="relative aspect-square bg-muted overflow-hidden">
         <img
           src={item.image_url}
