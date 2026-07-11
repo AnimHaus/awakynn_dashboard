@@ -114,7 +114,6 @@ function ProductModal({
 }) {
   const [stock, setStock] = useState(String(product.stock));
   const [pricing, setPricing] = useState<Sku[]>(product.pricing.map((s) => ({ ...s })));
-  const [isActive, setIsActive] = useState(product.is_active);
   const [imageUrl, setImageUrl] = useState(product.image);
   const [heroImageUrl, setHeroImageUrl] = useState(product.hero_image);
   const [saving, setSaving] = useState(false);
@@ -127,7 +126,6 @@ function ProductModal({
       const updated = await products.update(product.slug, {
         stock: Number(stock),
         pricing,
-        is_active: isActive,
         image: imageUrl,
         hero_image: heroImageUrl,
       });
@@ -162,28 +160,6 @@ function ProductModal({
 
         {/* ── Left column: settings ── */}
         <div className="flex flex-col gap-5">
-
-          {/* Visibility toggle */}
-          <div className="flex items-center justify-between p-3 rounded-xl bg-[#F7F9FF] border border-[#E4EBFE]">
-            <div>
-              <p className="text-sm font-medium text-gray-800">Visibility</p>
-              <p className="text-xs text-gray-400 mt-0.5">{isActive ? 'Visible to customers' : 'Hidden from store'}</p>
-            </div>
-            <button
-              onClick={() => setIsActive((v) => !v)}
-              className={[
-                'relative w-11 h-6 rounded-full transition-colors focus:outline-none',
-                isActive ? 'bg-[#2A61F9]' : 'bg-gray-200',
-              ].join(' ')}
-            >
-              <span
-                className={[
-                  'absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform',
-                  isActive ? 'translate-x-5' : 'translate-x-0',
-                ].join(' ')}
-              />
-            </button>
-          </div>
 
           {/* Stock */}
           <div className="flex flex-col gap-1.5">
