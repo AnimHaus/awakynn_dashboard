@@ -171,7 +171,7 @@ export type CreateOrderPayload = {
 };
 
 export const orders = {
-  list: (status?: string, skip = 0, limit = 50) => {
+  list: (status?: string, skip = 0, limit = 20) => {
     const params = new URLSearchParams({ skip: String(skip), limit: String(limit) });
     if (status) params.set('status_filter', status);
     return apiFetch<Order[]>(`/orders/?${params}`);
