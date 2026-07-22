@@ -26,6 +26,7 @@ const NAV_BY_BRAND: Record<string, { segment: string; label: string }[]> = {
     { segment: 'gallery',  label: 'Gallery'  },
     { segment: 'inbox',    label: 'Inbox'    },
     { segment: 'bookings', label: 'Bookings' },
+    { segment: 'members',  label: 'Members'  },
   ],
 };
 

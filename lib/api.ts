@@ -189,11 +189,26 @@ export const orders = {
 };
 
 // ── Users (admin) ─────────────────────────────────────────────────────────────
-// No user list endpoint yet — expose what the backend supports
+
+export type UserListItem = {
+  id: string;
+  email: string;
+  full_name: string;
+  phone: string;
+  age: number | null;
+  gender: string | null;
+  medical_history: string;
+  is_active: boolean;
+  is_admin: boolean;
+  created_at: string;
+};
+
 export const users = {
   me: () => apiFetch<User>('/auth/me'),
   updateMe: (data: { full_name?: string; phone?: string }) =>
     apiFetch<User>('/auth/me', { method: 'PATCH', body: JSON.stringify(data) }),
+  list: (skip = 0, limit = 50) =>
+    apiFetch<UserListItem[]>(`/auth/users?skip=${skip}&limit=${limit}`),
 };
 
 // ── Uploads ───────────────────────────────────────────────────────────────────
