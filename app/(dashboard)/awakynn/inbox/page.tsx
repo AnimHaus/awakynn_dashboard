@@ -113,14 +113,14 @@ export default function InboxPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Inbox</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Inbox</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
             Contact messages and testimonial submissions from the website.
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={load} disabled={loading}>
+        <Button variant="outline" size="sm" onClick={load} disabled={loading} className="self-start sm:self-auto">
           <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${loading ? 'animate-spin' : ''}`} /> Refresh
         </Button>
       </div>
@@ -134,12 +134,12 @@ export default function InboxPage() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)} className="space-y-8">
         <TabsList>
-          <TabsTrigger value="messages" className="flex items-center gap-2 data-active:bg-primary data-active:text-primary-foreground data-active:hover:text-primary-foreground p-4">
+          <TabsTrigger value="messages" className="flex items-center cursor-pointer gap-2 data-active:bg-primary data-active:text-primary-foreground data-active:hover:text-primary-foreground p-4">
             <Mail className="w-3.5 h-3.5" />
             Messages
             {newCount > 0 && <Badge className="ml-1 h-5 min-w-5 px-1.5 text-[10px]">{newCount}</Badge>}
           </TabsTrigger>
-          <TabsTrigger value="testimonials" className="flex items-center gap-2 data-active:bg-primary data-active:text-primary-foreground data-active:hover:text-primary-foreground p-4">
+          <TabsTrigger value="testimonials" className="flex items-center cursor-pointer gap-2 data-active:bg-primary data-active:text-primary-foreground data-active:hover:text-primary-foreground p-4">
             <Star className="w-3.5 h-3.5" />
             Testimonials
             {pendingCount > 0 && (

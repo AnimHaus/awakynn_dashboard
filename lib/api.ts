@@ -424,10 +424,23 @@ export type ServiceBooking = {
   customer_phone: string;
   status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
   payment_status: 'unpaid' | 'paid' | 'refunded';
+  payment_method: 'online' | 'cash';
+  is_subscription: boolean;
   razorpay_order_id: string | null;
   notes: string;
   created_at: string;
   updated_at: string;
+};
+
+export type ManualBookingPayload = {
+  service_slug: string;
+  service_name: string;
+  amount: number;
+  customer_name: string;
+  customer_email: string;
+  customer_phone: string;
+  is_subscription: boolean;
+  notes?: string;
 };
 
 export const serviceBookings = {
@@ -440,5 +453,17 @@ export const serviceBookings = {
     apiFetch<ServiceBooking>(`/services/bookings/${id}/status`, {
       method: 'PATCH',
       body: JSON.stringify({ status }),
+    }),
+
+  updatePaymentStatus: (id: string, payment_status: 'unpaid' | 'paid' | 'refunded', payment_method?: 'online' | 'cash') =>
+    apiFetch<ServiceBooking>(`/services/bookings/${id}/payment`, {
+      method: 'PATCH',
+      body: JSON.stringify({ payment_status, ...(payment_method ? { payment_method } : {}) }),
+    }),
+
+  createManual: (payload: ManualBookingPayload) =>
+    apiFetch<ServiceBooking>('/services/bookings/manual', {
+      method: 'POST',
+      body: JSON.stringify(payload),
     }),
 };

@@ -487,14 +487,14 @@ export default function ProductsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold">Products</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Products</h1>
           <p className="text-muted-foreground text-sm">{productList.length} products in catalogue</p>
         </div>
         <button
           onClick={() => setCreating(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2A61F9] text-white text-sm font-medium hover:bg-[#1A4FD4] transition-colors"
+          className="self-start sm:self-auto flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2A61F9] text-white text-sm font-medium hover:bg-[#1A4FD4] transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />

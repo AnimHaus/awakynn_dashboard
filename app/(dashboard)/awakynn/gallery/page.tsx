@@ -394,16 +394,16 @@ export default function GalleryPage() {
   const displayed = showHidden ? items : items.filter((i) => i.is_visible);
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="space-y-5">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">Gallery</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {items.filter((i) => i.is_visible).length} visible · {items.length} total
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Button
             variant="outline"
             size="sm"
@@ -424,7 +424,7 @@ export default function GalleryPage() {
       </div>
 
       {error && (
-        <div className="mb-4 rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-md bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}

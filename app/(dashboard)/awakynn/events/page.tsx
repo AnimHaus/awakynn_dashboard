@@ -425,14 +425,14 @@ export default function EventsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">Events</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             Manage event pages — each event gets its own URL slug, logo, and YouTube embed.
           </p>
         </div>
-        <Button size="sm" onClick={openCreate}>
+        <Button size="sm" onClick={openCreate} className="self-start sm:self-auto">
           <Plus className="w-3.5 h-3.5 mr-1.5" />
           New event
         </Button>
